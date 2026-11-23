@@ -2,6 +2,7 @@
 
 from enum import StrEnum
 from functools import lru_cache
+from pathlib import Path
 
 from pydantic import SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -31,6 +32,7 @@ class Settings(BaseSettings):
 
     database_url: SecretStr
     log_level: LogLevel = LogLevel.INFO
+    embedding_cache_dir: Path = Path("~/.cache/paper-similarity")
 
     @field_validator("database_url")
     @classmethod

@@ -18,6 +18,8 @@ Then open http://127.0.0.1:8000/docs.
 
 `docker compose down` keeps the stored data. `docker compose down -v` deletes it.
 
+The embedding model (about 65 MB) is downloaded on first use and then works offline.
+
 ## Checks
 
 ```bash
@@ -26,4 +28,5 @@ uv run ruff format --check .
 uv run mypy
 uv run pytest                        # needs Docker
 uv run pytest -m "not integration"   # fast, without Docker
+uv run pytest --run-model            # also tests the real embedding model
 ```
