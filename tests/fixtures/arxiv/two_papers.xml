@@ -1,0 +1,54 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<feed xmlns:opensearch="http://a9.com/-/spec/opensearch/1.1/" xmlns:arxiv="http://arxiv.org/schemas/atom" xmlns="http://www.w3.org/2005/Atom">
+  <id>https://arxiv.org/api/0MIIcwP0V8ZrQQRcj3WGf3A4aDo</id>
+  <title>arXiv Query: search_query=cat:cs.CL&amp;id_list=&amp;start=0&amp;max_results=2</title>
+  <updated>2026-11-23T23:00:10Z</updated>
+  <link href="https://arxiv.org/api/query?search_query=cat:cs.CL&amp;start=0&amp;max_results=2&amp;id_list=" type="application/atom+xml"/>
+  <opensearch:itemsPerPage>2</opensearch:itemsPerPage>
+  <opensearch:totalResults>125980</opensearch:totalResults>
+  <opensearch:startIndex>0</opensearch:startIndex>
+  <entry>
+    <id>http://arxiv.org/abs/2611.27973v1</id>
+    <title>MemOnce: A Scalable Memory Architecture for Large Language Models</title>
+    <updated>2026-11-20T18:51:29Z</updated>
+    <link href="https://arxiv.org/abs/2611.27973v1" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2611.27973v1" rel="related" type="application/pdf" title="pdf"/>
+    <summary>Deploying large language models (LLMs) in long-horizon and continual interactions requires maintaining reusable memory states for future inference, posing challenges for existing architectures. Standard Transformers accumulate layer-wise, token-level KV caches, incurring linear GPU memory growth and quadratic computational complexity as the context expands. In contrast, linear-time architectures compress history into fixed-size states, but struggle to retain fine-grained details. We introduce MemOnce, a foundation architecture that learns scalable memory states for language models. MemOnce is based on two core designs: (a) Memory encoder-decoder: it caches only a small subset of final-layer hidden states as compact memory representations and dynamically decodes them back into KV caches for attention layers; (b) Memory sparse attention: for each continual input, MemOnce adaptively retrieves relevant memory representations, with the sparse indices computed only once across layers. Coupling these two designs enables efficient on-the-fly memory loading and KV cache decoding, drastically reducing the GPU memory footprint and achieving linear-time complexity. We conduct extensive experiments to show that MemOnce outperforms Transformers and other architectures across varying model sizes, context lengths, and training paradigms (pretraining and post-training adaptation). In particular, adapting Qwen3.5-4B with MemOnce reduces memory state cache by 1313$\times$ and prefill latency by 6.9$\times$ at 1M context, and improves throughput by 3.5$\times$ and overall memory performance by +5.77%. Finally, MemOnce generalizes zero-shot to downstream representation tasks, achieving competitive results against specialized models.</summary>
+    <category term="cs.CL" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2026-11-20T18:51:29Z</published>
+    <arxiv:comment>Project Page: https://clare-nie.github.io/MemOnce</arxiv:comment>
+    <arxiv:primary_category term="cs.CL"/>
+    <author>
+      <name>Chang Nie</name>
+    </author>
+    <author>
+      <name>Chaoyou Fu</name>
+    </author>
+    <author>
+      <name>Songlin Liu</name>
+    </author>
+    <author>
+      <name>Yiqing Hu</name>
+    </author>
+    <author>
+      <name>Caifeng Shan</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2611.27895v1</id>
+    <title>TEA-Bench-BR: Can Coding Agents Turn a Branching Clinical Specification into Correct Code?</title>
+    <updated>2026-11-20T17:35:59Z</updated>
+    <link href="https://arxiv.org/abs/2611.27895v1" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2611.27895v1" rel="related" type="application/pdf" title="pdf"/>
+    <summary>Coding agents increasingly implement rules written by domain experts, and bugs in such code are silent: it runs and returns a plausible answer. We introduce TEA-Bench-BR, a benchmark built on the Brazilian pathway for early autism (TEA) screening: three fictitious instruments with the structure of real ones, a multi-professional referral flow, and export to FHIR R4 with the national RNDS profiles, all specified in Portuguese. A generator samples each task's parameters (144 tasks, 6,798 hidden cases), and the hidden cases kill all 1,955 non-equivalent mutants of the reference. With Gemma 4 as the agent, the 12B solves 38.0% of single-instrument tasks and none at the FHIR level; the 31B solves 77.8%, 85.2% and 78.7% at levels 1 to 3 and passes over 99% of the hidden cases, its remaining failures mostly in input validation rather than clinical decisions. With the same tasks in English, the 31B solves 57.4% at level 3, as its code validates an identifier less often; the 12B's, more often. The 12B misses 10.10% of the cases that call for referral; the 31B, 0.02%. A contamination probe on a modified PHQ-9 finds no error that follows the original rules.</summary>
+    <category term="cs.SE" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.AI" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.CL" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2026-11-20T17:35:59Z</published>
+    <arxiv:comment>7 pages, 2 figures. Submitted to the Google Gemma 4 Developer Agent Paper Track (Kaggle, November 2026). Benchmark, code and results: https://doi.org/10.5281/zenodo.24143388</arxiv:comment>
+    <arxiv:primary_category term="cs.SE"/>
+    <author>
+      <name>Marcio Andre de Souza Estevam</name>
+    </author>
+  </entry>
+</feed>

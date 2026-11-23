@@ -1,0 +1,48 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<feed xmlns:opensearch="http://a9.com/-/spec/opensearch/1.1/" xmlns:arxiv="http://arxiv.org/schemas/atom" xmlns="http://www.w3.org/2005/Atom">
+  <id>https://arxiv.org/api/g56HUtAl3kpS7D2TY84r+ht2YX0</id>
+  <title>arXiv Query: search_query=&amp;id_list=hep-th/9901001,2401.12345v1,math.GT/0309136&amp;start=0&amp;max_results=10</title>
+  <updated>2026-11-23T23:00:14Z</updated>
+  <link href="https://arxiv.org/api/query?search_query=&amp;start=0&amp;max_results=10&amp;id_list=hep-th/9901001,2401.12345v1,math.GT/0309136" type="application/atom+xml"/>
+  <opensearch:itemsPerPage>10</opensearch:itemsPerPage>
+  <opensearch:totalResults>2</opensearch:totalResults>
+  <opensearch:startIndex>0</opensearch:startIndex>
+  <entry>
+    <id>http://arxiv.org/abs/2401.12345v1</id>
+    <title>Distributionally Robust Beamforming and Estimation of Wireless Signals</title>
+    <updated>2024-01-22T20:20:48Z</updated>
+    <link href="https://arxiv.org/abs/2401.12345v1" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2401.12345v1" rel="related" type="application/pdf" title="pdf"/>
+    <summary>This paper investigates signal estimation in wireless transmission from the perspective of statistical machine learning, where the transmitted signals may be from an integrated sensing and communication system; that is, 1) signals may be not only discrete constellation points but also arbitrary complex values; 2) signals may be spatially correlated. Particular attention is paid to handling various uncertainties such as the uncertainty of the transmitting signal covariance, the uncertainty of the channel matrix, the uncertainty of the channel noise covariance, the existence of channel impulse noises (i.e., outliers), and the limited sample size of pilots. To proceed, a distributionally robust machine learning framework that is insensitive to the above uncertainties is proposed for beamforming (at the receiver) and estimation of wireless signals, which reveals that channel estimation is not a necessary operation. For optimal linear estimation, the proposed framework includes several existing beamformers as special cases such as diagonal loading and eigenvalue thresholding. For optimal nonlinear estimation, estimators are limited in reproducing kernel Hilbert spaces and neural network function spaces, and corresponding uncertainty-aware solutions (e.g., kernelized diagonal loading) are derived. In addition, we prove that the ridge and kernel ridge regression methods in machine learning are distributionally robust against diagonal perturbation in feature covariance.</summary>
+    <category term="eess.SP" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2024-01-22T20:20:48Z</published>
+    <arxiv:primary_category term="eess.SP"/>
+    <author>
+      <name>Shixiong Wang</name>
+    </author>
+    <author>
+      <name>Wei Dai</name>
+    </author>
+    <author>
+      <name>Geoffrey Ye Li</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/hep-th/9901001v3</id>
+    <title>String Junctions and Their Duals in Heterotic String Theory</title>
+    <updated>1999-05-10T04:45:54Z</updated>
+    <link href="https://arxiv.org/abs/hep-th/9901001v3" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/hep-th/9901001v3" rel="related" type="application/pdf" title="pdf"/>
+    <summary>  We explicitly give the correspondence between spectra of heterotic string theory compactified on $T^2$ and string junctions in type IIB theory compactified on $S^2$.</summary>
+    <category term="hep-th" scheme="http://arxiv.org/schemas/atom"/>
+    <published>1999-01-01T01:01:10Z</published>
+    <arxiv:comment>13 pages + 4 eps figures, PTPTeX, typographical errors corrected</arxiv:comment>
+    <arxiv:primary_category term="hep-th"/>
+    <arxiv:journal_ref>Prog.Theor.Phys.101:1155-1164,1999</arxiv:journal_ref>
+    <author>
+      <name>Yosuke Imamura</name>
+    </author>
+    <arxiv:doi>10.1143/PTP.101.1155</arxiv:doi>
+    <link rel="related" href="https://doi.org/10.1143/PTP.101.1155" title="doi"/>
+  </entry>
+</feed>
