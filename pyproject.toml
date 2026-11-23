@@ -1,0 +1,57 @@
+[project]
+name = "paper-similarity"
+version = "0.1.0"
+description = "Finds indexed arXiv papers similar to a submitted manuscript."
+requires-python = ">=3.14,<3.15"
+dependencies = [
+    "fastapi>=0.165.0",
+    "pydantic-settings>=2.16.3",
+    "uvicorn>=0.54.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/paper_similarity"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py314"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes: unused or undefined names
+    "I",   # import sorting
+    "B",   # bugbear: likely bugs
+    "UP",  # modern Python syntax
+    "SIM", # simplifications
+    "ANN", # missing type annotations
+    "S",   # security checks
+    "T20", # print() left in code
+    "RUF", # Ruff-specific checks
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101"] # pytest tests use assert
+
+[tool.mypy]
+strict = true
+files = ["src", "tests"]
+plugins = ["pydantic.mypy"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--strict-markers --strict-config"
+
+[dependency-groups]
+dev = [
+    "httpx2>=2.16.2",
+    "mypy>=2.4.1",
+    "pytest>=9.2.0",
+    "ruff>=0.17.6",
+]
