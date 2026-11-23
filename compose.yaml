@@ -1,0 +1,23 @@
+services:
+  db:
+    image: pgvector/pgvector:0.8.7-pg18-trixie
+    environment:
+      POSTGRES_DB: paper_similarity
+      POSTGRES_USER: paper_similarity
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?copy .env.example to .env first}
+    ports:
+      - "127.0.0.1:5432:5432" # reachable only from this machine
+    volumes:
+      # PostgreSQL 18 images keep data below /var/lib/postgresql, not .../data
+      - db-data:/var/lib/postgresql
+    healthcheck:
+      # -h forces TCP, so the temporary socket-only server used during
+      # first-time initialization is not reported as healthy
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U paper_similarity -d paper_similarity"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+
+volumes:
+  db-data:

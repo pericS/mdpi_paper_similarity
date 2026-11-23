@@ -4,8 +4,8 @@ from paper_similarity.config import Settings
 from paper_similarity.main import create_app
 
 
-def test_live_returns_ok() -> None:
-    client = TestClient(create_app(Settings(_env_file=None)))
+def test_live_returns_ok(settings: Settings) -> None:
+    client = TestClient(create_app(settings))
 
     response = client.get("/health/live")
 
@@ -13,8 +13,8 @@ def test_live_returns_ok() -> None:
     assert response.json() == {"status": "ok"}
 
 
-def test_openapi_documents_the_health_endpoint() -> None:
-    client = TestClient(create_app(Settings(_env_file=None)))
+def test_openapi_documents_the_health_endpoint(settings: Settings) -> None:
+    client = TestClient(create_app(settings))
 
     response = client.get("/openapi.json")
 
