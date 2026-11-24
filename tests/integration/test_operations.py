@@ -18,6 +18,7 @@ from paper_similarity.db.session import create_db_engine
 from paper_similarity.logging_config import HANDLER_NAME
 from paper_similarity.main import create_app
 from tests.fakes import FakeEmbedder
+from tests.integration.conftest import run_alembic
 
 PAPERS = "/api/v1/papers"
 JSON = {"Content-Type": "application/json"}
@@ -206,6 +207,21 @@ def test_alive_but_not_ready_without_database(api_without_database: TestClient) 
 
 
 def test_not_ready_before_migrations(empty_database_engine: Engine, embedder: FakeEmbedder) -> None:
+    url = SecretStr(empty_database_engine.url.render_as_string(hide_password=False))
+    with TestClient(create_app(Settings(_env_file=None, database_url=url), embedder)) as api:
+        response = api.get("/health/ready")
+
+    assert response.status_code == 503
+
+
+@pytest.mark.parametrize("table", ["arxiv_papers", "submitted_papers"])
+def test_not_ready_if_one_table_is_missing(
+    empty_database_engine: Engine, embedder: FakeEmbedder, table: str
+) -> None:
+    run_alembic(empty_database_engine, "upgrade", "head")
+    with empty_database_engine.begin() as connection:
+        connection.execute(text(f"DROP TABLE {table}"))
+
     url = SecretStr(empty_database_engine.url.render_as_string(hide_password=False))
     with TestClient(create_app(Settings(_env_file=None, database_url=url), embedder)) as api:
         response = api.get("/health/ready")

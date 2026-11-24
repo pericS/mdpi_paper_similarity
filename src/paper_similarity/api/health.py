@@ -12,6 +12,7 @@ from paper_similarity.api.dependencies import SessionFactoryDependency
 from paper_similarity.api.errors import documented_errors, error_response
 from paper_similarity.db.errors import describe_safely
 from paper_similarity.repositories.arxiv_papers import ArxivPaperRepository
+from paper_similarity.repositories.submitted_papers import SubmittedPaperRepository
 
 logger = logging.getLogger(__name__)
 
@@ -27,8 +28,9 @@ class ReadyResponse(BaseModel):
 
 
 @router.get("/live", summary="Check that the process is running")
-def live() -> LiveResponse:
+async def live() -> LiveResponse:
     """Report liveness only. External dependencies are deliberately not checked."""
+    # Async, so it does not wait for a worker thread when all are busy with submissions.
     return LiveResponse()
 
 
@@ -39,13 +41,14 @@ def live() -> LiveResponse:
     responses=documented_errors(503),
 )
 def ready(session_factory: SessionFactoryDependency) -> ReadyResponse | JSONResponse:
-    """Check that the database can be reached and contains the tables.
+    """Check that the database can be reached and contains both tables.
 
     The embedding model is not checked: without it, the application does not start.
     """
     try:
         with session_factory() as session:
             ArxivPaperRepository(session).check_available()
+            SubmittedPaperRepository(session).check_available()
     except SQLAlchemyError as error:
         logger.warning("Not ready: %s", describe_safely(error))
         return error_response(503, "not_ready", "The database is not ready")

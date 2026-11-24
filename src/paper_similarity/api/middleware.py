@@ -99,22 +99,31 @@ class BodySizeLimitMiddleware:
             await self._reject(scope, receive, send)
             return
 
-        messages: list[Message] = []
-        received = 0
+        # One buffer, because keeping every message costs far more than its bytes:
+        # a client can send the body in a million pieces of one byte.
+        body = bytearray()
         while True:
             message = await receive()
-            messages.append(message)
-            received += len(message.get("body", b""))
-            if received > self._max_bytes:
+            if message["type"] != "http.request":
+                break  # the client disconnected; the application is told below
+            body += message.get("body", b"")
+            if len(body) > self._max_bytes:
                 await self._reject(scope, receive, send)
                 return
             if not message.get("more_body", False):
+                message = {"type": "http.request", "body": bytes(body), "more_body": False}
                 break
 
-        async def replay() -> Message:
-            return messages.pop(0) if messages else await receive()
+        first: Message | None = message
 
-        await self._app(scope, replay, send)
+        async def receive_collected() -> Message:
+            nonlocal first
+            if first is None:
+                return await receive()
+            collected, first = first, None
+            return collected
+
+        await self._app(scope, receive_collected, send)
 
     async def _reject(self, scope: Scope, receive: Receive, send: Send) -> None:
         response = error_response(

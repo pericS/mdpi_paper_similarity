@@ -21,6 +21,10 @@ class SubmittedPaperRepository:
     def __init__(self, session: Session) -> None:
         self._session = session
 
+    def check_available(self) -> None:
+        """Raise an error if the table cannot be read."""
+        self._session.execute(select(SubmittedPaper.id).limit(1))
+
     def add(self, paper: SubmittedPaper) -> None:
         self._session.add(paper)
 
