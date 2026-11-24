@@ -42,8 +42,13 @@ class FakeArxiv:
         self.requests: list[httpx2.Request] = []
         self.request_times: list[float] = []
         self.sleeps: list[float] = []
+        # A new client first waits. Most tests start when that wait is already over.
+        self.now = -3.0
+        self.client = self.create_client()
         self.now = 0.0
-        self.client = ArxivClient(
+
+    def create_client(self) -> ArxivClient:
+        return ArxivClient(
             httpx2.Client(transport=httpx2.MockTransport(self._answer)),
             sleep=self._sleep,
             clock=lambda: self.now,
@@ -114,6 +119,19 @@ def test_requests_are_at_least_three_seconds_apart() -> None:
     assert arxiv.request_times == [0, 3, 6]
 
 
+def test_next_job_also_waits_three_seconds() -> None:
+    arxiv = FakeArxiv(feed(1, total=1), feed(1, total=1))
+    arxiv.read_ids()
+    arxiv.now += 1  # saving the last page
+    arxiv.client = arxiv.create_client()
+    arxiv.now += 0.5  # loading the model
+    arxiv.read_ids()
+
+    # Only the 0.5 s count: the new client cannot know when the last request was.
+    assert arxiv.request_times == [0, 4]
+    assert arxiv.sleeps == [2.5]
+
+
 def test_no_extra_waiting_when_the_caller_was_slow() -> None:
     arxiv = FakeArxiv(feed(1, total=2, first=1), feed(1, total=2, first=2))
     pages = arxiv.client.iter_pages("cat:cs.CL", 10, 1)
@@ -134,9 +152,20 @@ def test_no_extra_waiting_when_the_caller_was_slow() -> None:
         httpx2.Response(500),
         httpx2.Response(503),
         httpx2.Response(200, text="<feed"),
+        httpx2.Response(200, content=b'<?xml version="1.0" encoding="unknown-1"?><feed/>'),
         feed(0, total=5),  # empty although there are results
     ],
-    ids=["connect", "timeout", "disconnect", "429", "500", "503", "broken-xml", "empty-page"],
+    ids=[
+        "connect",
+        "timeout",
+        "disconnect",
+        "429",
+        "500",
+        "503",
+        "broken-xml",
+        "unknown-encoding",
+        "empty-page",
+    ],
 )
 def test_temporary_failure_is_retried(failure: Reply) -> None:
     arxiv = FakeArxiv(failure, feed(1, total=1))
@@ -205,8 +234,11 @@ def test_invalid_query_is_not_retried_and_shows_the_reason() -> None:
     assert len(arxiv.requests) == 1
 
 
-def test_rejected_request_without_explanation() -> None:
-    arxiv = FakeArxiv(httpx2.Response(400, text="Bad request"))
+@pytest.mark.parametrize(
+    "content", [b"Bad request", b'<?xml version="1.0" encoding="unknown-1"?><feed/>']
+)
+def test_rejected_request_without_explanation(content: bytes) -> None:
+    arxiv = FakeArxiv(httpx2.Response(400, content=content))
 
     with pytest.raises(ArxivQueryError, match="without an explanation"):
         arxiv.read_ids()

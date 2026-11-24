@@ -65,7 +65,8 @@ def parse_feed(content: bytes) -> ArxivPage:
     """Parse a response. One unusable entry is skipped; an unusable feed raises."""
     try:
         feed = fromstring(content, forbid_dtd=True)
-    except (ParseError, DefusedXmlException) as error:
+    except (ParseError, DefusedXmlException, LookupError, ValueError) as error:
+        # The last two: an unknown or unsupported encoding in the XML declaration.
         raise ArxivResponseError("arXiv returned invalid XML") from error
     if feed.tag != FEED_TAG:
         raise ArxivResponseError("arXiv returned XML that is not an Atom feed")

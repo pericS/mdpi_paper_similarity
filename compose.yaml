@@ -3,7 +3,9 @@ x-app: &app
   build: .
   image: paper-similarity:local
   environment:
-    PAPER_SIMILARITY_DATABASE_URL: postgresql+psycopg://paper_similarity:${POSTGRES_PASSWORD:?copy .env.example to .env first}@db:5432/paper_similarity
+    PAPER_SIMILARITY_DATABASE_URL: postgresql+psycopg://paper_similarity@db:5432/paper_similarity
+    # Read by PostgreSQL's client library. In the URL, special characters need encoding.
+    PGPASSWORD: ${POSTGRES_PASSWORD:?copy .env.example to .env first}
     PAPER_SIMILARITY_LOG_LEVEL: ${PAPER_SIMILARITY_LOG_LEVEL:-INFO}
     PAPER_SIMILARITY_MAX_TEXT_TOKENS: ${PAPER_SIMILARITY_MAX_TEXT_TOKENS:-20000}
   # The application never writes files and needs no special rights.

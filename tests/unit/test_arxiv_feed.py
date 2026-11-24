@@ -81,6 +81,8 @@ def test_one_unusable_entry_is_skipped(original: bytes, broken: bytes) -> None:
         b"<html><body>Service unavailable</body></html>",
         b"<feed xmlns='http://www.w3.org/2005/Atom'></feed>",  # no result count
         read_fixture("two_papers.xml")[:2000],  # incomplete
+        b'<?xml version="1.0" encoding="unknown-1"?><feed/>',  # LookupError
+        b'<?xml version="1.0" encoding="utf-32"?><feed/>',  # ValueError
     ],
 )
 def test_unusable_response_raises(content: bytes) -> None:

@@ -110,7 +110,8 @@ default), newest papers first.
 - **Failures:** each page of up to 100 papers is one transaction, so earlier pages stay saved.
   Timeouts, `429`, `5xx` and broken responses are retried with growing delays. A rejected query is
   not retried.
-- **Polite:** one connection, at least 3 seconds between requests, one ingestion at a time.
+- **Polite:** one connection, one ingestion at a time, at least 3 seconds between requests, also
+  between two jobs.
 - **Exit code:** 0 success, 1 failure or no usable papers, 2 wrong arguments.
 
 It is a command because it is a batch job that depends on an external service: it can be repeated
@@ -126,7 +127,7 @@ Environment variables or `.env` (see `.env.example`). Wrong values stop the star
 | `PAPER_SIMILARITY_LOG_LEVEL` | `INFO` | `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL` |
 | `PAPER_SIMILARITY_MAX_TEXT_TOKENS` | `20000` | Longest text that is embedded |
 | `PAPER_SIMILARITY_EMBEDDING_CACHE_DIR` | `~/.cache/paper-similarity` | Model files (set in the image) |
-| `POSTGRES_PASSWORD` | required by Compose | Used in a URL: letters and digits are simplest |
+| `POSTGRES_PASSWORD` | required by Compose | Set when the database is created. Put special characters in single quotes |
 | `API_PORT`, `DB_PORT` | `8000`, `5432` | Published by Compose on 127.0.0.1 only |
 
 ## Development and tests
@@ -141,7 +142,8 @@ uv run alembic upgrade head
 uv run uvicorn paper_similarity.main:create_app --factory --reload
 ```
 
-If you change `DB_PORT`, change the port in `PAPER_SIMILARITY_DATABASE_URL` too. Stop the API container
+If you change `DB_PORT` or `POSTGRES_PASSWORD`, change `PAPER_SIMILARITY_DATABASE_URL` too; special
+characters of the password must be URL-encoded there (`@` as `%40`). Stop the API container
 (`docker compose stop api`) before using port 8000 here.
 
 The model (about 65 MB) is downloaded on first use and then works offline.

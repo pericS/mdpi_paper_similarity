@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import httpx2
 import pytest
 from pydantic import SecretStr
 from sqlalchemy import Engine, func, select
@@ -9,7 +10,7 @@ from paper_similarity import cli
 from paper_similarity.arxiv.errors import ArxivQueryError, ArxivUnavailableError
 from paper_similarity.arxiv.feed import ArxivPage
 from paper_similarity.config import Settings, get_settings
-from paper_similarity.db.locks import INGESTION_LOCK_KEY, advisory_lock
+from paper_similarity.db.locks import INGESTION_LOCK_KEY, LockNotAvailableError, advisory_lock
 from paper_similarity.db.models import ArxivPaper
 from tests.fakes import FakeEmbedder, FakePaperSource, make_page, make_record
 
@@ -87,6 +88,28 @@ def test_second_ingestion_at_the_same_time_is_refused(
     assert result.exit_code == 1
     assert "already running" in result.output
     assert count_papers(engine) == 0
+
+
+def test_arxiv_client_is_created_while_the_lock_is_held(
+    monkeypatch: pytest.MonkeyPatch, engine: Engine, committed_database: Engine
+) -> None:
+    """Its first wait only protects consecutive jobs if it starts after the previous job."""
+    lock_was_held = False
+
+    def create_client(http_client: httpx2.Client) -> FakePaperSource:
+        nonlocal lock_was_held
+        try:
+            with advisory_lock(engine, INGESTION_LOCK_KEY):
+                pass
+        except LockNotAvailableError:
+            lock_was_held = True
+        return FakePaperSource(make_page(make_record()))
+
+    monkeypatch.setattr(cli, "ArxivClient", create_client)
+    result = CliRunner().invoke(cli.app, ["ingest", "--query", "cat:cs.CL"])
+
+    assert result.exit_code == 0
+    assert lock_was_held
 
 
 def test_unreachable_database_is_reported_without_the_password(

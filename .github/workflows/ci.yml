@@ -34,6 +34,8 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - run: cp .env.example .env
+      - name: Use a password that is not valid inside a URL
+        run: echo "POSTGRES_PASSWORD='p@ss%41:/?#x'" >> .env
       - run: docker compose up --build --detach --wait
       - run: curl --fail --silent --show-error http://127.0.0.1:8000/health/ready
       - name: Submit a paper and search

@@ -4,6 +4,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 import numpy as np
 import pytest
+from pydantic import SecretStr
 
 from paper_similarity.config import Settings
 from paper_similarity.db.models import EMBEDDING_DIMENSIONS
@@ -15,8 +16,9 @@ pytestmark = pytest.mark.model
 
 @pytest.fixture(scope="module")
 def embedder() -> Embedder:
-    cache_dir = Settings.model_fields["embedding_cache_dir"].default
-    return FastEmbedEmbedder(cache_dir, max_text_tokens=2000)
+    # The configured cache folder is used, but these tests need no database.
+    settings = Settings(database_url=SecretStr("postgresql+psycopg://unused"))
+    return FastEmbedEmbedder(settings.embedding_cache_dir, max_text_tokens=2000)
 
 
 def test_vectors_fit_the_database_and_have_length_one(embedder: Embedder) -> None:

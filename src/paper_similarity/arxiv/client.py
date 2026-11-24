@@ -44,7 +44,11 @@ class _RetryableError(Exception):
 
 
 class ArxivClient:
-    """Reads search results page by page. Not safe to share between threads."""
+    """Reads search results page by page. Not safe to share between threads.
+
+    Create it while holding the ingestion lock: the first wait then also keeps the
+    distance from a previous job.
+    """
 
     def __init__(
         self,
@@ -57,7 +61,8 @@ class ArxivClient:
         # Tests replace these, so that they do not really wait.
         self._sleep = sleep
         self._clock = clock
-        self._last_request_finished: float | None = None
+        # An earlier job may have just sent a request, so the first request waits too.
+        self._last_request_finished = clock()
 
     def iter_pages(
         self, query: str, max_results: int, page_size: int = DEFAULT_PAGE_SIZE
@@ -130,8 +135,6 @@ class ArxivClient:
         return page
 
     def _wait_for_turn(self) -> None:
-        if self._last_request_finished is None:
-            return
         elapsed = self._clock() - self._last_request_finished
         if elapsed < MIN_SECONDS_BETWEEN_REQUESTS:
             self._sleep(MIN_SECONDS_BETWEEN_REQUESTS - elapsed)
