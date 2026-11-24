@@ -41,6 +41,14 @@ curl -X POST http://127.0.0.1:8000/api/v1/papers \
 Returns `201` with `{"id": "...", "status": "created"}`. The title is optional. The text may have
 up to 100,000 characters and 20,000 tokens.
 
+## Retrieve similar papers
+
+```bash
+curl "http://127.0.0.1:8000/api/v1/posts/<id>/similar?limit=5"
+```
+
+Use the `id` returned when the paper was submitted. `limit` is 1 to 100, 10 by default.
+
 ## Checks
 
 ```bash

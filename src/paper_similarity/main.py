@@ -6,7 +6,7 @@ from importlib.metadata import version
 
 from fastapi import FastAPI
 
-from paper_similarity.api import health, papers
+from paper_similarity.api import health, papers, similar_papers
 from paper_similarity.config import Settings, get_settings
 from paper_similarity.db.session import create_db_engine, create_session_factory
 from paper_similarity.embeddings.base import Embedder
@@ -41,4 +41,5 @@ def create_app(settings: Settings | None = None, embedder: Embedder | None = Non
     register_error_handlers(app)
     app.include_router(health.router)
     app.include_router(papers.router)
+    app.include_router(similar_papers.router)
     return app

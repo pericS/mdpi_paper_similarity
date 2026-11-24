@@ -2,6 +2,7 @@
 
 from collections.abc import Sequence
 from dataclasses import dataclass
+from datetime import datetime
 from typing import Any
 
 from sqlalchemy import func, select, update
@@ -34,6 +35,19 @@ class EmbeddedPaper:
     content_hash: str
     embedding: list[float]
     embedding_model: str
+
+
+@dataclass(frozen=True)
+class SimilarPaper:
+    """A search result: what is needed to show a paper, without its vector."""
+
+    arxiv_id: str
+    title: str
+    authors: list[str]
+    primary_category: str
+    url: str
+    published_at: datetime
+    distance: float  # cosine distance: 0 same direction, 1 perpendicular, 2 opposite
 
 
 def metadata_values(record: ArxivRecord) -> dict[str, Any]:
@@ -88,6 +102,32 @@ class ArxivPaperRepository:
             )
             for row in rows
         }
+
+    def find_similar(
+        self, embedding: Sequence[float], *, embedding_model: str, limit: int
+    ) -> list[SimilarPaper]:
+        """Return the closest papers, closest first.
+
+        Compares with every paper (there is no approximate index), so none is missed.
+        """
+        distance = ArxivPaper.embedding.cosine_distance(embedding).label("distance")
+        rows = self._session.execute(
+            select(
+                ArxivPaper.arxiv_id,
+                ArxivPaper.title,
+                ArxivPaper.authors,
+                ArxivPaper.primary_category,
+                ArxivPaper.url,
+                ArxivPaper.published_at,
+                distance,
+            )
+            # Vectors of different models are not comparable.
+            .where(ArxivPaper.embedding_model == embedding_model)
+            # The ID makes the order the same every time, also for equal distances.
+            .order_by(distance, ArxivPaper.arxiv_id)
+            .limit(limit)
+        ).mappings()
+        return [SimilarPaper(**row) for row in rows]
 
     def upsert(self, papers: Sequence[EmbeddedPaper]) -> None:
         """Insert papers, or update those that exist. Never replaces a newer version.

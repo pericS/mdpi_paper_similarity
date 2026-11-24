@@ -9,6 +9,7 @@ from sqlalchemy.exc import InterfaceError, OperationalError
 from sqlalchemy.exc import TimeoutError as PoolTimeoutError
 
 from paper_similarity.embeddings.base import EmbeddingError, UnembeddableTextError
+from paper_similarity.services.similarity import PaperNotFoundError
 
 logger = logging.getLogger(__name__)
 
@@ -16,6 +17,7 @@ logger = logging.getLogger(__name__)
 def register_error_handlers(app: FastAPI) -> None:
     # Handlers are chosen by the most specific error class.
     app.add_exception_handler(RequestValidationError, _handle_invalid_request)
+    app.add_exception_handler(PaperNotFoundError, _handle_paper_not_found)
     app.add_exception_handler(UnembeddableTextError, _handle_unembeddable_text)
     app.add_exception_handler(EmbeddingError, _handle_embedding_error)
     for error_class in (OperationalError, InterfaceError, PoolTimeoutError):
@@ -45,6 +47,10 @@ def _printable(part: str | int) -> str | int:
     if isinstance(part, int):
         return part
     return part.encode("utf-8", errors="replace").decode()
+
+
+def _handle_paper_not_found(request: Request, error: Exception) -> JSONResponse:
+    return JSONResponse({"detail": "There is no submitted paper with this ID"}, status_code=404)
 
 
 def _handle_unembeddable_text(request: Request, error: Exception) -> JSONResponse:
