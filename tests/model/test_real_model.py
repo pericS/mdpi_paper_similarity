@@ -7,7 +7,7 @@ import pytest
 
 from paper_similarity.config import Settings
 from paper_similarity.db.models import EMBEDDING_DIMENSIONS
-from paper_similarity.embeddings.base import Embedder, UnembeddableTextError
+from paper_similarity.embeddings.base import Embedder, TextTooLongError, UnembeddableTextError
 from paper_similarity.embeddings.fastembed_embedder import FastEmbedEmbedder
 
 pytestmark = pytest.mark.model
@@ -16,7 +16,7 @@ pytestmark = pytest.mark.model
 @pytest.fixture(scope="module")
 def embedder() -> Embedder:
     cache_dir = Settings.model_fields["embedding_cache_dir"].default
-    return FastEmbedEmbedder(cache_dir)
+    return FastEmbedEmbedder(cache_dir, max_text_tokens=2000)
 
 
 def test_vectors_fit_the_database_and_have_length_one(embedder: Embedder) -> None:
@@ -70,6 +70,13 @@ def test_same_text_gives_the_same_vector_from_many_threads(embedder: Embedder) -
 def test_empty_text_is_rejected(embedder: Embedder, text: str) -> None:
     with pytest.raises(UnembeddableTextError):
         embedder.embed(["A valid text", text])
+
+
+def test_text_above_the_token_limit_is_rejected(embedder: Embedder) -> None:
+    embedder.embed(["word " * 2000])
+
+    with pytest.raises(TextTooLongError, match="2001 tokens, the limit is 2000"):
+        embedder.embed(["word " * 2001])
 
 
 def test_no_texts_give_no_vectors(embedder: Embedder) -> None:

@@ -30,6 +30,17 @@ uv run paper-similarity ingest --query "cat:cs.CL AND abs:retrieval" --max-resul
 `--query` uses the [arXiv search syntax](https://info.arxiv.org/help/api/user-manual.html#query_details).
 The newest papers are read first. Running the command again processes only changes.
 
+## Submit a paper
+
+```bash
+curl -X POST http://127.0.0.1:8000/api/v1/papers \
+  -H "Content-Type: application/json" \
+  -d '{"title": "Dense retrieval", "text": "We study how embeddings can find related papers."}'
+```
+
+Returns `201` with `{"id": "...", "status": "created"}`. The title is optional. The text may have
+up to 100,000 characters and 20,000 tokens.
+
 ## Checks
 
 ```bash

@@ -57,7 +57,9 @@ def ingest(
         ):
             service = IngestionService(
                 source=ArxivClient(http_client),
-                embedder=FastEmbedEmbedder(settings.embedding_cache_dir),
+                embedder=FastEmbedEmbedder(
+                    settings.embedding_cache_dir, max_text_tokens=settings.max_text_tokens
+                ),
                 session_factory=create_session_factory(engine),
             )
             for report in service.ingest(query, max_results):

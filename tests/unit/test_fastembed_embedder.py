@@ -16,4 +16,4 @@ def test_unavailable_model_is_reported_as_embedding_error(
     monkeypatch.setattr(fastembed_embedder, "snapshot_download", fail)
 
     with pytest.raises(EmbeddingError, match="Could not load"):
-        FastEmbedEmbedder(tmp_path)
+        FastEmbedEmbedder(tmp_path, max_text_tokens=100)

@@ -9,7 +9,11 @@ from huggingface_hub import snapshot_download
 from huggingface_hub.errors import LocalEntryNotFoundError
 from tokenizers import Tokenizer
 
-from paper_similarity.embeddings.base import EmbeddingError, UnembeddableTextError
+from paper_similarity.embeddings.base import (
+    EmbeddingError,
+    TextTooLongError,
+    UnembeddableTextError,
+)
 from paper_similarity.embeddings.chunking import combine_vectors, split_into_chunks
 
 logger = logging.getLogger(__name__)
@@ -24,7 +28,8 @@ MODEL_ID = f"{MODEL_NAME}@{MODEL_REVISION[:12]}"
 MAX_MODEL_TOKENS = 512
 SPECIAL_TOKENS = 2  # the model adds [CLS] at the start and [SEP] at the end
 MAX_CHUNK_TOKENS = MAX_MODEL_TOKENS - SPECIAL_TOKENS
-BATCH_SIZE = 16
+# Measured: larger batches were slower on CPU and needed several times more memory.
+BATCH_SIZE = 1
 
 
 def download_model(cache_dir: Path) -> Path:
@@ -51,7 +56,8 @@ def _model_snapshot(cache_dir: Path, *, local_files_only: bool) -> Path:
 class FastEmbedEmbedder:
     """Implements the Embedder protocol. Create one per process: loading is expensive."""
 
-    def __init__(self, cache_dir: Path) -> None:
+    def __init__(self, cache_dir: Path, *, max_text_tokens: int) -> None:
+        self._max_text_tokens = max_text_tokens
         try:
             model_path = download_model(cache_dir.expanduser())
             self._model = TextEmbedding(
@@ -77,6 +83,12 @@ class FastEmbedEmbedder:
         ]
         if not all(chunks_per_text):
             raise UnembeddableTextError("The text contains nothing to embed")
+        for chunks in chunks_per_text:
+            token_count = sum(chunk.token_count for chunk in chunks)
+            if token_count > self._max_text_tokens:
+                raise TextTooLongError(
+                    f"The text has {token_count} tokens, the limit is {self._max_text_tokens}"
+                )
 
         all_chunks = [chunk.text for chunks in chunks_per_text for chunk in chunks]
         try:

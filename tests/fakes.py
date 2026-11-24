@@ -20,11 +20,11 @@ class FakeEmbedder:
     def __init__(self, model_id: str = "fake-model") -> None:
         self.model_id = model_id
         self.embedded_texts: list[str] = []
-        self.fail = False
+        self.error: EmbeddingError | None = None  # raised by embed(), if set
 
     def embed(self, texts: Sequence[str]) -> list[list[float]]:
-        if self.fail:
-            raise EmbeddingError("The fake embedder was told to fail")
+        if self.error is not None:
+            raise self.error
         self.embedded_texts.extend(texts)
         return [self._embed_one(text) for text in texts]
 

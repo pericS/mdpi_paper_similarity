@@ -4,7 +4,7 @@ from enum import StrEnum
 from functools import lru_cache
 from pathlib import Path
 
-from pydantic import SecretStr, field_validator
+from pydantic import PositiveInt, SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 DATABASE_URL_SCHEME = "postgresql+psycopg://"
@@ -33,6 +33,8 @@ class Settings(BaseSettings):
     database_url: SecretStr
     log_level: LogLevel = LogLevel.INFO
     embedding_cache_dir: Path = Path("~/.cache/paper-similarity")
+    # Limits the cost of embedding one text. About 100,000 characters of English.
+    max_text_tokens: PositiveInt = 20_000
 
     @field_validator("database_url")
     @classmethod

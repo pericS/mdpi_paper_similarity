@@ -12,6 +12,10 @@ class UnembeddableTextError(EmbeddingError):
     """The text itself is the problem: it contains nothing to embed."""
 
 
+class TextTooLongError(UnembeddableTextError):
+    """The text has more tokens than the configured limit."""
+
+
 class Embedder(Protocol):
     """Any object with these members can be used as an embedder."""
 

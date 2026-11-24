@@ -22,7 +22,7 @@ def settings(database_url: str) -> Settings:
 @pytest.fixture(autouse=True)
 def replace_expensive_parts(monkeypatch: pytest.MonkeyPatch, settings: Settings) -> None:
     monkeypatch.setattr(cli, "get_settings", lambda: settings)
-    monkeypatch.setattr(cli, "FastEmbedEmbedder", lambda cache_dir: FakeEmbedder())
+    monkeypatch.setattr(cli, "FastEmbedEmbedder", lambda *args, **kwargs: FakeEmbedder())
 
 
 def run_ingest(

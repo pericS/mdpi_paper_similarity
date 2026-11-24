@@ -6,6 +6,7 @@ from pathlib import Path
 import pytest
 from alembic import command
 from alembic.config import Config
+from fastapi.testclient import TestClient
 from pydantic import SecretStr
 from sqlalchemy import Engine, make_url, text
 from sqlalchemy.orm import Session, sessionmaker
@@ -13,6 +14,8 @@ from testcontainers.community.postgres import PostgresContainer
 
 from paper_similarity.config import Settings
 from paper_similarity.db.session import create_db_engine
+from paper_similarity.main import create_app
+from tests.fakes import FakeEmbedder
 
 PROJECT_ROOT = Path(__file__).parents[2]
 # Keep in sync with compose.yaml.
@@ -79,6 +82,21 @@ def committed_database(engine: Engine) -> Iterator[Engine]:
     yield engine
     with engine.begin() as connection:
         connection.execute(text("TRUNCATE arxiv_papers, submitted_papers"))
+
+
+@pytest.fixture
+def embedder() -> FakeEmbedder:
+    return FakeEmbedder()
+
+
+@pytest.fixture
+def api(
+    database_url: str, committed_database: Engine, embedder: FakeEmbedder
+) -> Iterator[TestClient]:
+    """The complete application with a real database and a fake embedder."""
+    settings = Settings(_env_file=None, database_url=SecretStr(database_url))
+    with TestClient(create_app(settings, embedder)) as client:
+        yield client
 
 
 @pytest.fixture

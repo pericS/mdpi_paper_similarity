@@ -15,11 +15,6 @@ from tests.fakes import FakeEmbedder, FakePaperSource, make_page, make_record
 Sessions = sessionmaker[Session]
 
 
-@pytest.fixture
-def embedder() -> FakeEmbedder:
-    return FakeEmbedder()
-
-
 def ingest(
     sessions: Sessions, embedder: FakeEmbedder, *pages: ArxivPage | Exception
 ) -> IngestionReport:
@@ -168,7 +163,7 @@ def test_failure_on_a_later_page_keeps_earlier_pages(
 def test_failed_embedding_saves_nothing_from_that_page(
     session_factory: Sessions, embedder: FakeEmbedder
 ) -> None:
-    embedder.fail = True
+    embedder.error = EmbeddingError("model is broken")
 
     with pytest.raises(EmbeddingError):
         ingest(session_factory, embedder, make_page(make_record()))
