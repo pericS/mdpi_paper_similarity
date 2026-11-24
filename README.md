@@ -2,6 +2,17 @@
 
 Finds indexed arXiv papers similar to a submitted manuscript. Work in progress.
 
+## Quick start with Docker
+
+```bash
+cp .env.example .env
+docker compose up --build -d --wait
+docker compose run --rm ingest --query "cat:cs.CL AND abs:retrieval" --max-results 50
+```
+
+Then open http://127.0.0.1:8000/docs. Migrations run automatically, and the image contains the
+embedding model. If a port is taken, set `API_PORT` or `DB_PORT` in `.env`.
+
 ## Development
 
 Requires [uv](https://docs.astral.sh/uv/) (it provides Python 3.14 if needed) and Docker with Compose.
@@ -9,7 +20,7 @@ Requires [uv](https://docs.astral.sh/uv/) (it provides Python 3.14 if needed) an
 ```bash
 cp .env.example .env
 uv sync
-docker compose up -d --wait        # PostgreSQL with pgvector
+docker compose up -d --wait db     # PostgreSQL with pgvector
 uv run alembic upgrade head        # create the tables
 uv run uvicorn paper_similarity.main:create_app --factory --reload
 ```

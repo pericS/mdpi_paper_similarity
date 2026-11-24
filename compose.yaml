@@ -1,3 +1,18 @@
+# The application image, shared by three services.
+x-app: &app
+  build: .
+  image: paper-similarity:local
+  environment:
+    PAPER_SIMILARITY_DATABASE_URL: postgresql+psycopg://paper_similarity:${POSTGRES_PASSWORD:?copy .env.example to .env first}@db:5432/paper_similarity
+    PAPER_SIMILARITY_LOG_LEVEL: ${PAPER_SIMILARITY_LOG_LEVEL:-INFO}
+    PAPER_SIMILARITY_MAX_TEXT_TOKENS: ${PAPER_SIMILARITY_MAX_TEXT_TOKENS:-20000}
+  # The application never writes files and needs no special rights.
+  read_only: true
+  tmpfs: [/tmp]
+  cap_drop: [ALL]
+  security_opt: ["no-new-privileges:true"]
+  mem_limit: 2g
+
 services:
   db:
     image: pgvector/pgvector:0.8.7-pg18-trixie
@@ -8,7 +23,7 @@ services:
       POSTGRES_USER: paper_similarity
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?copy .env.example to .env first}
     ports:
-      - "127.0.0.1:5432:5432" # reachable only from this machine
+      - "127.0.0.1:${DB_PORT:-5432}:5432" # reachable only from this machine
     volumes:
       # PostgreSQL 18 images keep data below /var/lib/postgresql, not .../data
       - db-data:/var/lib/postgresql
@@ -20,6 +35,44 @@ services:
       timeout: 3s
       retries: 10
       start_period: 10s
+    restart: unless-stopped
+
+  # Runs once and ends. The API starts only if it succeeded.
+  migrate:
+    <<: *app
+    command: ["alembic", "upgrade", "head"]
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      disable: true
+
+  api:
+    <<: *app
+    ports:
+      - "127.0.0.1:${API_PORT:-8000}:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    # Longer than the 30 s that Uvicorn gives to running requests.
+    stop_grace_period: 35s
+    restart: unless-stopped
+
+  # Not started by `docker compose up`. Use: docker compose run --rm ingest --query ...
+  ingest:
+    <<: *app
+    profiles: [tools]
+    entrypoint: ["paper-similarity", "ingest"]
+    command: ["--help"]
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      disable: true
 
 volumes:
   db-data:
