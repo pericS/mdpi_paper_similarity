@@ -84,6 +84,10 @@ class ArxivPaperRepository:
     def __init__(self, session: Session) -> None:
         self._session = session
 
+    def check_available(self) -> None:
+        """Raise an error if the table cannot be read."""
+        self._session.execute(select(ArxivPaper.id).limit(1))
+
     def find_stored(self, arxiv_ids: Sequence[str]) -> dict[str, StoredPaper]:
         """Return the papers that already exist, by arXiv ID."""
         rows = self._session.execute(

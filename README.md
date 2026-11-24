@@ -49,6 +49,14 @@ curl "http://127.0.0.1:8000/api/v1/posts/<id>/similar?limit=5"
 
 Use the `id` returned when the paper was submitted. `limit` is 1 to 100, 10 by default.
 
+## Health, errors and logs
+
+- `GET /health/live`: the process is running.
+- `GET /health/ready`: the database can be used; otherwise `503`.
+- Every error has the form `{"error": {"code", "message", "details", "request_id"}}`.
+- Every response has an `X-Request-ID` header; the same ID is in the log lines of that request.
+- Titles and texts of submitted papers are not logged.
+
 ## Checks
 
 ```bash

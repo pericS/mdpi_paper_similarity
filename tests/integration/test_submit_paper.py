@@ -105,7 +105,7 @@ def test_invalid_request_is_rejected_and_names_the_field(
     response = api.post(URL, json=body)
 
     assert response.status_code == 422
-    assert response.json()["detail"][0]["loc"][-1] == field
+    assert response.json()["error"]["details"][0]["field"].split(".")[-1] == field
     assert stored_papers(committed_database) == []
 
 
@@ -144,7 +144,8 @@ def test_text_with_too_many_tokens_is_rejected_with_the_limit(
     response = api.post(URL, json={"text": "Some text"})
 
     assert response.status_code == 422
-    assert "limit is 8" in response.json()["detail"]
+    assert response.json()["error"]["code"] == "text_too_long"
+    assert "limit is 8" in response.json()["error"]["message"]
     assert stored_papers(committed_database) == []
 
 
@@ -172,7 +173,7 @@ def test_unavailable_database_is_reported(embedder: FakeEmbedder) -> None:
         response = api.post(URL, json={"text": "Some text"})
 
     assert response.status_code == 503
-    assert response.json() == {"detail": "The database is unavailable"}
+    assert response.json()["error"]["code"] == "database_unavailable"
 
 
 def test_manuscript_is_not_logged(api: TestClient, caplog: pytest.LogCaptureFixture) -> None:

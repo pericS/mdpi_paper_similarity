@@ -8,7 +8,7 @@ import numpy as np
 
 from paper_similarity.arxiv.feed import ArxivPage, ArxivRecord
 from paper_similarity.db.models import EMBEDDING_DIMENSIONS
-from paper_similarity.embeddings.base import EmbeddingError, UnembeddableTextError
+from paper_similarity.embeddings.base import UnembeddableTextError
 
 
 class FakeEmbedder:
@@ -20,7 +20,7 @@ class FakeEmbedder:
     def __init__(self, model_id: str = "fake-model") -> None:
         self.model_id = model_id
         self.embedded_texts: list[str] = []
-        self.error: EmbeddingError | None = None  # raised by embed(), if set
+        self.error: Exception | None = None  # raised by embed(), if set
 
     def embed(self, texts: Sequence[str]) -> list[list[float]]:
         if self.error is not None:

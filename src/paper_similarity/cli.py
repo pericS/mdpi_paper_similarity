@@ -7,11 +7,12 @@ from typing import Annotated, NoReturn
 
 import typer
 from pydantic import ValidationError
-from sqlalchemy.exc import DBAPIError, SQLAlchemyError
+from sqlalchemy.exc import OperationalError, SQLAlchemyError
 
 from paper_similarity.arxiv.client import ArxivClient, create_http_client
 from paper_similarity.arxiv.errors import ArxivError
 from paper_similarity.config import Settings, get_settings
+from paper_similarity.db.errors import describe_safely, sqlstate
 from paper_similarity.db.locks import INGESTION_LOCK_KEY, LockNotAvailableError, advisory_lock
 from paper_similarity.db.session import create_db_engine, create_session_factory
 from paper_similarity.embeddings.base import EmbeddingError
@@ -112,16 +113,12 @@ def _errors_as_messages() -> Iterator[None]:
 
 
 def _describe_database_error(error: SQLAlchemyError) -> str:
-    """Describe the problem without the full message, which may contain stored data."""
-    kind = type(error).__name__
-    if not isinstance(error, DBAPIError):
-        return f"Database: {kind}"
-    sqlstate = getattr(error.orig, "sqlstate", None)
-    if sqlstate == "42P01":
+    code = sqlstate(error)
+    if code == "42P01":
         return "Database: tables are missing. Run: alembic upgrade head"
-    if sqlstate is None:
-        return f"Database: {kind}. Is it running, and is the database URL correct?"
-    return f"Database: {kind} (SQLSTATE {sqlstate})"
+    if isinstance(error, OperationalError) and code is None:
+        return "Database: cannot connect. Is it running, and is the database URL correct?"
+    return f"Database: {describe_safely(error)}"
 
 
 def _describe(report: IngestionReport) -> str:

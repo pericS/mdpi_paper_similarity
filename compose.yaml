@@ -1,6 +1,8 @@
 services:
   db:
     image: pgvector/pgvector:0.8.7-pg18-trixie
+    # Error details can contain manuscript text, so they are kept out of the server log.
+    command: ["postgres", "-c", "log_error_verbosity=terse"]
     environment:
       POSTGRES_DB: paper_similarity
       POSTGRES_USER: paper_similarity

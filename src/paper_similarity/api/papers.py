@@ -7,6 +7,7 @@ from fastapi import APIRouter, status
 from pydantic import AfterValidator, BaseModel, ConfigDict, Field, StringConstraints
 
 from paper_similarity.api.dependencies import SubmissionServiceDependency
+from paper_similarity.api.errors import documented_errors
 
 MAX_TITLE_CHARACTERS = 500
 MAX_TEXT_CHARACTERS = 100_000
@@ -73,7 +74,7 @@ class SubmitPaperResponse(BaseModel):
     "",
     status_code=status.HTTP_201_CREATED,
     summary="Submit a paper",
-    responses={503: {"description": "The embedding model or the database is unavailable"}},
+    responses=documented_errors(413, 422, 503),
 )
 def submit_paper(
     request: SubmitPaperRequest, service: SubmissionServiceDependency

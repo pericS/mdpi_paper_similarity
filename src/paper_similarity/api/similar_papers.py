@@ -8,6 +8,7 @@ from fastapi import APIRouter, Path, Query
 from pydantic import BaseModel, Field
 
 from paper_similarity.api.dependencies import SimilarityServiceDependency
+from paper_similarity.api.errors import documented_errors
 from paper_similarity.repositories.arxiv_papers import SimilarPaper
 
 DEFAULT_LIMIT = 10
@@ -52,10 +53,7 @@ class SimilarPapersResponse(BaseModel):
 @router.get(
     "/{paper_id}/similar",
     summary="Retrieve similar papers",
-    responses={
-        404: {"description": "There is no submitted paper with this ID"},
-        503: {"description": "The database is unavailable"},
-    },
+    responses=documented_errors(404, 422, 503),
 )
 def get_similar_papers(
     service: SimilarityServiceDependency,

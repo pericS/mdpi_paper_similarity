@@ -142,7 +142,7 @@ def test_invalid_limit_is_rejected(api: TestClient, committed_database: Engine, 
     response = get_similar(api, paper_id, f"?limit={limit}")
 
     assert response.status_code == 422
-    assert response.json()["detail"][0]["loc"] == ["query", "limit"]
+    assert response.json()["error"]["details"][0]["field"] == "query.limit"
 
 
 def test_unknown_id_is_not_found(api: TestClient, committed_database: Engine) -> None:
@@ -151,7 +151,7 @@ def test_unknown_id_is_not_found(api: TestClient, committed_database: Engine) ->
     response = get_similar(api, uuid4())
 
     assert response.status_code == 404
-    assert response.json() == {"detail": "There is no submitted paper with this ID"}
+    assert response.json()["error"]["code"] == "paper_not_found"
 
 
 @pytest.mark.parametrize("paper_id", ["paper-123", "1", "2401.00001", "0193"])
@@ -159,7 +159,7 @@ def test_malformed_id_is_rejected(api: TestClient, paper_id: str) -> None:
     response = get_similar(api, paper_id)
 
     assert response.status_code == 422
-    assert response.json()["detail"][0]["loc"] == ["path", "paper_id"]
+    assert response.json()["error"]["details"][0]["field"] == "path.paper_id"
 
 
 def test_empty_index_gives_no_matches(api: TestClient, committed_database: Engine) -> None:
