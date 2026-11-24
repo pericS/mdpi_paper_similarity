@@ -19,6 +19,16 @@ Then open http://127.0.0.1:8000/docs.
 `docker compose down` keeps the stored data. `docker compose down -v` deletes it.
 
 The embedding model (about 65 MB) is downloaded on first use and then works offline.
+Use `uv run paper-similarity download-model` to download it in advance.
+
+## Ingest arXiv papers
+
+```bash
+uv run paper-similarity ingest --query "cat:cs.CL AND abs:retrieval" --max-results 100
+```
+
+`--query` uses the [arXiv search syntax](https://info.arxiv.org/help/api/user-manual.html#query_details).
+The newest papers are read first. Running the command again processes only changes.
 
 ## Checks
 

@@ -16,8 +16,12 @@ dependencies = [
     "pydantic-settings>=2.16.3",
     "sqlalchemy>=2.1.9",
     "tokenizers>=0.23.3",
+    "typer>=0.29.2",
     "uvicorn>=0.54.0",
 ]
+
+[project.scripts]
+paper-similarity = "paper_similarity.cli:app"
 
 [build-system]
 requires = ["hatchling"]

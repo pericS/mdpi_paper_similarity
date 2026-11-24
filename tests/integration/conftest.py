@@ -8,7 +8,7 @@ from alembic import command
 from alembic.config import Config
 from pydantic import SecretStr
 from sqlalchemy import Engine, make_url, text
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, sessionmaker
 from testcontainers.community.postgres import PostgresContainer
 
 from paper_similarity.config import Settings
@@ -60,6 +60,25 @@ def session(engine: Engine) -> Iterator[Session]:
         with Session(connection, join_transaction_mode="create_savepoint") as session:
             yield session
         transaction.rollback()
+
+
+@pytest.fixture
+def session_factory(engine: Engine) -> Iterator[sessionmaker[Session]]:
+    """Like `session`, for code that opens and commits its own sessions."""
+    with engine.connect() as connection:
+        transaction = connection.begin()
+        yield sessionmaker(
+            connection, join_transaction_mode="create_savepoint", expire_on_commit=False
+        )
+        transaction.rollback()
+
+
+@pytest.fixture
+def committed_database(engine: Engine) -> Iterator[Engine]:
+    """For tests that really commit. The tables are emptied afterwards."""
+    yield engine
+    with engine.begin() as connection:
+        connection.execute(text("TRUNCATE arxiv_papers, submitted_papers"))
 
 
 @pytest.fixture
